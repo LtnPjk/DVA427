@@ -60,36 +60,6 @@ if __name__ == "__main__":
     print("Random starting synaptic weights: ")
     print(neural_network.synaptic_weights)
 
-    # Parse training set
-    # Split lines into patients
-    with open(os.path.join(sys.path[0], "assignment1.txt"), "r") as f:
-        patients = f.read().splitlines()
-    
-    #remove the first unusable lines
-    for i in range(0, 24):
-        patients.pop(0)
-
-    patient_att = []
-
-    # Every patient has 19 attributes, split them by ","
-    for i, patient in enumerate(patients):
-        patient_att.append(patient.split(','))
-        #print(patient)
-        #if i == 2:
-            #print(patient_att)
-        #    break
-
-    # Take the first 18 attributes as training input
-    training_inp = [attribute[0:18] for attribute in patient_att]
-    # Take the last attribute as training output (target)
-    training_oup = [[attribute[-1] for attribute in patient_att]]
-
-    training_inp = np.array(training_inp)
-    training_oup = np.array(training_oup).T
-
-    print(training_inp)
-    print(training_oup)
-
 
     # The training set, with 4 examples consisting of 3
     # input values and 1 output value
