@@ -1,85 +1,203 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import os
 import sys
+import math
+from sklearn import datasets
 
-class NeuralNetwork():
+# Global vars
+train_features = []
+train_labels = []
+validation_features = []
+validation_labels = []
+test_features = []
+test_labels = []
 
-    def __init__(self):
-        # Seed the random number generator
-        np.random.seed(1)
+def parse_file():
+    feature_set, labels = datasets.make_moons(100, noise=0.10)
+    '''
+    plt.figure(figsize=(10,7))
+    plt.scatter(feature_set[:,0], feature_set[:,1], c=labels)
+    plt.scatter(feature_set[:,0], feature_set[:,1], c=labels, cmap=plt.cm.winter)
+    plt.show()
+    '''
 
-        # TODO
-        # Convert to MLP, 9 nodes in hidden layer.
-        
+    labels = labels.reshape(100, 1)
 
-        # Set synaptic weights to a 3x1 matrix, from -1 to 1 and mean 0
-        self.synaptic_weights = 2 * np.random.rand(3,1) - 1
+    # Parse training set
+    # Split lines into patients
+    with open(os.path.join(sys.path[0], "assignment1.txt"), "r") as f:
+        patients = f.read().splitlines()
 
-    def sigmoid(self, x):
-        # INPUT: Weighted sum of synapses
-        # OUTPUT: Normalized weighted sum through sigmoid
+    #remove the first unusable lines
+    for i in range(0, 24):
+        patients.pop(0)
 
-        return 1 / (1 + np.exp(-x))
+    patient_att = []
 
-    def sigmoid_derivative(self, x):
-        # INPUT: Normalized weighted sum
-        # OUTPUT: Derivative necessary to calculate weight adjustments
+    # Every patient has 19 attributes, split them by ","
+    for i, patient in enumerate(patients):
+        patient_att.append(patient.split(','))
+        #print(patient)
+        #if i == 5:
+            #print(patient_att)
+            #break
 
-        return x * (1 - x)
+    # Take the first 18 attributes as training input
+    training_inp = [attribute[0:19] for attribute in patient_att]
+    # Take the last attribute as training output (target)
+    training_oup = [[attribute[-1] for attribute in patient_att]]
+
+
+    #feature_set = np.array([[float(j) for j in i] for i in training_inp])
+    #labels = np.array([[float(j) for j in i] for i in training_oup]).T
+
+    validation_inp = feature_set[int(len(feature_set)*0.75):int(len(feature_set)*0.85)]
+    test_inp = feature_set[int(len(feature_set)*0.85):int(len(feature_set))]
+    feature_set = feature_set[0:int(len(feature_set)*0.75)]
+
+    validation_oup = labels[int(len(labels)*0.75):int(len(labels)*0.85)]
+    test_oup = labels[int(len(labels)*0.85):int(len(labels))]
+    labels = labels[0:int(len(labels)*0.75)]
+
+
+    print(validation_inp.shape)
+    print(test_inp.shape)
+    print(feature_set.shape)
+
+    return feature_set, labels, validation_inp, validation_oup, test_inp, test_oup
+
+# Activation function
+def sigmoid(x):
+    return 1/(1+np.exp(-x))
+
+# Derivative of activation function
+def sigmoid_der(x):
+    return sigmoid(x) *(1-sigmoid (x))
+
+def round_half_up(n, decimals = 0):
+    multiplier = 10 ** decimals
+    return math.floor(n * multiplier + 0.5) / multiplier
+
+def feed_forward(features, labels):
     
-    def train(self, training_inputs, training_outputs, training_iterations):
+    # "Un-squashed" values on hidden layer
+    zh = np.dot(features, wh)
+    # Squashed values on hidden layer
+    ah = sigmoid(zh)
 
-        for iteration in range(training_iterations):
-            # Pass training set through the neural network
-            output = self.think(training_inputs)
+    # "Un-squashed" values on output layer
+    zo = np.dot(ah, wo)
+    # Squashed values on output layer
+    ao = sigmoid(zo)
 
-            # Calculate the error rate
-            error = training_outputs - output
-            
-            # Multiply error by input and gradient of the sigmoid function
-            # Less confident weights are adjusted more through the nature of the function
-            adjustments = np.dot(training_inputs.T, error * self.sigmoid_derivative(output))
+    # Calculate error
+    error_out = ((1 / 2) * (np.power((ao - labels), 2)))
 
-            # Adjust synaptic weights
-            self.synaptic_weights += adjustments
-            
-    def think(self, inputs):
-        """
-        Pass inputs through the neural network to get output
-        """
-        
-        inputs = inputs.astype(float)
-        output = self.sigmoid(np.dot(inputs, self.synaptic_weights))
-        return output
+    return zh, ah, zo, ao, error_out.sum()
 
-if __name__ == "__main__":
-
-    # Initialize the single neuron neural network
-    neural_network = NeuralNetwork()
-
-    print("Random starting synaptic weights: ")
-    print(neural_network.synaptic_weights)
-
-
-    # The training set, with 4 examples consisting of 3
-    # input values and 1 output value
-    training_inputs = np.array([[0,0,1],
-                                [1,1,1],
-                                [1,0,1],
-                                [0,1,1]])
-
-    training_outputs = np.array([[0,1,1,0]]).T
-
-    # Train the neural network
-    neural_network.train(training_inputs, training_outputs, 10000)
-
-    print("Synaptic weights after training: ")
-    print(neural_network.synaptic_weights)
-
-    A = str(input("Input 1: "))
-    B = str(input("Input 2: "))
-    C = str(input("Input 3: "))
+def validation():
+    global last_error, smallest_error, best_wh, best_wo, wh, wo
+    a, b, c, d, validation_error = feed_forward(validation_features, validation_labels)
+    print("Validation Error: ", validation_error, "error diff: ", abs(validation_error-last_error))
     
-    print("New situation: input data = ", A, B, C)
-    print("Output data: ")
-    print(neural_network.think(np.array([A, B, C])))
+    last_error = validation_error
+
+    if smallest_error == 1000 or smallest_error > validation_error:
+        smallest_error = validation_error
+        best_wh = wh
+        best_wo = wo
+        
+    elif validation_error > smallest_error * 1.05:
+        print("Validation Interrupt")
+        wh = best_wh
+        wo = best_wo
+        return -1
+    return validation_error
+
+def test():
+    zh, ah, zo, ao, error_out = feed_forward(test_features, test_labels)
+
+    ao = [int(round_half_up(i, 0)) for i in ao]
+
+    correct_guesses = 0
+
+    for i, j in zip(ao, test_labels):
+        if i == int(j):
+            correct_guesses = correct_guesses + 1
+    
+    return (correct_guesses/len(test_labels))
+
+def train(epochs, n):
+    global wo, wh, res
+    plt.ion()
+    epoch_vali = []
+
+    for epoch in range(epochs):
+        zh, ah, zo, ao, error = feed_forward(train_features, train_labels)
+
+
+        # Validation
+        if epoch % n == 0:
+            res = validation()
+            epoch_vali.append(res)
+            if len(epoch_vali) > 200:
+                epoch_vali.pop(0)
+            if res == -1:
+                print("Predictability: ", test())
+                exit()
+            '''
+            plt.clf()
+            x = np.linspace(0, len(epoch_vali), len(epoch_vali))
+            plt.plot(x, epoch_vali, color = 'red')
+            plt.title(str(epoch))
+            plt.draw()
+            plt.pause(0.1)
+            '''
+
+        # Phase 1 of backpropagation
+        dcost_dao = ao - train_labels
+        dao_dzo = sigmoid_der(zo)
+        dzo_dwo = ah
+
+        dcost_wo = np.dot(dzo_dwo.T, dcost_dao * dao_dzo)
+
+        # Phase 2 of backpropagation
+        dcost_dzo = dcost_dao * dao_dzo
+        dzo_dah = wo
+        #print('dcost_dzo: ' , dcost_dzo.shape)
+        #print('dzo_dah.T: ' , dzo_dah.T)
+        dcost_dah = np.dot(dcost_dzo, dzo_dah.T)
+        dah_dzh = sigmoid_der(zh) 
+        dzh_dwh = train_features
+        dcost_wh = np.dot(dzh_dwh.T, dah_dzh * dcost_dah)
+
+        # Update Weights
+
+        wh -= lr * dcost_wh
+        wo -= lr * dcost_wo
+
+    plt.show(block=True)    
+    print("Predictability: ", test())
+
+############################################
+np.random.seed(1)
+
+# Main program
+train_features, train_labels, validation_features, validation_labels, test_features, test_labels = parse_file()
+
+# Generate random weight array for hidden and output layer
+wh = np.random.rand(len(train_features[0]), 4)
+wo = np.random.rand(4, 1)
+
+# Weights from the best epoch according to the validation function
+best_wh = 0
+best_wo = 0
+smallest_error = 1000
+last_error = 0
+res = 0
+
+# Learning rate
+lr = 0.3
+
+train(100000, 100)
