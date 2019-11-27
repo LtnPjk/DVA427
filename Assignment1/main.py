@@ -49,8 +49,8 @@ def parse_file():
     training_oup = [[attribute[-1] for attribute in patient_att]]
 
 
-    #feature_set = np.array([[float(j) for j in i] for i in training_inp])
-    #labels = np.array([[float(j) for j in i] for i in training_oup]).T
+    feature_set = np.array([[float(j) for j in i] for i in training_inp])
+    labels = np.array([[float(j) for j in i] for i in training_oup]).T
 
     validation_inp = feature_set[int(len(feature_set)*0.75):int(len(feature_set)*0.85)]
     test_inp = feature_set[int(len(feature_set)*0.85):int(len(feature_set))]
@@ -99,7 +99,7 @@ def feed_forward(features, labels):
 def validation():
     global last_error, smallest_error, best_wh, best_wo, wh, wo
     a, b, c, d, validation_error = feed_forward(validation_features, validation_labels)
-    print("Validation Error: ", validation_error, "error diff: ", abs(validation_error-last_error))
+    #print("Validation Error: ", validation_error, "error diff: ", abs(validation_error-last_error))
     
     last_error = validation_error
 
@@ -108,7 +108,7 @@ def validation():
         best_wh = wh
         best_wo = wo
         
-    elif validation_error > smallest_error * 1.05:
+    elif validation_error > smallest_error * 1.50:
         print("Validation Interrupt")
         wh = best_wh
         wo = best_wo
@@ -129,19 +129,24 @@ def test():
     return (correct_guesses/len(test_labels))
 
 def train(epochs, n):
-    global wo, wh, res
+    global wo, wh, res, lr
     plt.ion()
     epoch_vali = []
 
     for epoch in range(epochs):
         zh, ah, zo, ao, error = feed_forward(train_features, train_labels)
-
+        '''
+        if epoch > 10000:
+            lr = 0.0006
+        '''
+        lr = np.power(0.0000012 * epoch - 0.07, 2) + 0.0003
 
         # Validation
         if epoch % n == 0:
+            print('Epoch: ', epoch)
             res = validation()
             epoch_vali.append(res)
-            if len(epoch_vali) > 200:
+            if len(epoch_vali) > 100:
                 epoch_vali.pop(0)
             if res == -1:
                 print("Predictability: ", test())
@@ -181,14 +186,14 @@ def train(epochs, n):
     print("Predictability: ", test())
 
 ############################################
-np.random.seed(1)
+np.random.seed(0)
 
 # Main program
 train_features, train_labels, validation_features, validation_labels, test_features, test_labels = parse_file()
 
 # Generate random weight array for hidden and output layer
-wh = np.random.rand(len(train_features[0]), 4)
-wo = np.random.rand(4, 1)
+wh = np.random.rand(len(train_features[0]), 10)
+wo = np.random.rand(10, 1)
 
 # Weights from the best epoch according to the validation function
 best_wh = 0
@@ -197,7 +202,7 @@ smallest_error = 1000
 last_error = 0
 res = 0
 
-# Learning rate
-lr = 0.3
+# Initial learning rate
+lr = 0.006
 
-train(100000, 100)
+train(50000, 100)
