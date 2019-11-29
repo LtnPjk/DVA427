@@ -43,7 +43,7 @@ plt.show()
 # Construct rules
 rule1 = ctrl.Rule((sepal_length['short'] | sepal_length['long']) & (sepal_width['medium'] | sepal_width['long']) & (petal_length['medium'] | petal_length['long']) & petal_width['medium'], species['versicolor'])
 rule2 = ctrl.Rule((petal_length['short'] | petal_length['medium']) & petal_width['short'], species['setosa'])
-rule3 = ctrl.Rule((sepal_width['short'] | sepal_width['medium']) & petal_length['short'] & petal_width['long'], species['virginica'])
+rule3 = ctrl.Rule((sepal_width['short'] | sepal_width['medium']) & petal_length['long'] & petal_width['long'], species['virginica'])
 rule4 = ctrl.Rule(sepal_length['medium'] & (sepal_width['short'] | sepal_width['medium']) & petal_length['short'] & petal_width['long'], species['versicolor'])
 
 species_ctrl = ctrl.ControlSystem([rule1, rule2, rule3, rule4])
