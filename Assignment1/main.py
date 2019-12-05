@@ -4,6 +4,7 @@ import os
 import sys
 import math
 from sklearn import datasets
+from sklearn import preprocessing
 
 # Global vars
 train_features = []
@@ -12,6 +13,25 @@ validation_features = []
 validation_labels = []
 test_features = []
 test_labels = []
+feature_set = []
+
+min_features = np.full((19,1), np.inf)
+max_features = np.zeros((19,1))
+
+def find_min_max(features):
+    global min_features, max_features
+    for x in features:
+        for i,y in enumerate(x):
+            if y > max_features[i]:
+                max_features[i] = y
+            if y < min_features[i]:
+                min_features[i] = y
+
+def normalize():
+    global min_features, max_features, feature_set
+    for x in feature_set:
+        for i,y in enumerate(x):
+            y = (y-min_features[i])/(max_features[i]-min_features[i])
 
 def parse_file():
     feature_set, labels = datasets.make_moons(100, noise=0.10)
@@ -51,6 +71,11 @@ def parse_file():
 
     feature_set = np.array([[float(j) for j in i] for i in training_inp])
     labels = np.array([[float(j) for j in i] for i in training_oup]).T
+
+    find_min_max(feature_set)
+    print(min_features)
+    print(max_features)
+    normalize()
 
     validation_inp = feature_set[int(len(feature_set)*0.75):int(len(feature_set)*0.85)]
     test_inp = feature_set[int(len(feature_set)*0.85):int(len(feature_set))]
@@ -151,14 +176,13 @@ def train(epochs, n):
             if res == -1:
                 print("Predictability: ", test())
                 exit()
-            '''
+
             plt.clf()
             x = np.linspace(0, len(epoch_vali), len(epoch_vali))
             plt.plot(x, epoch_vali, color = 'red')
             plt.title(str(epoch))
             plt.draw()
             plt.pause(0.1)
-            '''
 
         # Phase 1 of backpropagation
         dcost_dao = ao - train_labels
@@ -203,6 +227,6 @@ last_error = 0
 res = 0
 
 # Initial learning rate
-lr = 0.006
+lr = 0.005
 
-train(10000, 100)
+train(25000, 100)

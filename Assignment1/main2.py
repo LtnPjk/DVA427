@@ -204,8 +204,8 @@ np.random.seed(0)
 train_features, train_labels, validation_features, validation_labels, test_features, test_labels = parse_file()
 
 # Generate random weight array for hidden and output layer
-hn = 25
-Hn = 18
+hn = 8
+Hn = 8
 
 wh = np.random.rand(len(train_features[0]), hn)
 wH = np.random.rand(hn, Hn)
