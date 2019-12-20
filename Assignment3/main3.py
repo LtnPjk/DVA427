@@ -41,11 +41,6 @@ def parse_file():
 def draw_chromosome(Chromosome):
     plt.clf()
 
-    #recordDistance = distance
-    #bestEver = pop[i]
-    #print(recordDistance, "  ", sum(fitness))
-    #print(fitness)
-
     listx = [x[0] for x in Chromosome.sequence]
     listy = [y[1] for y in Chromosome.sequence]
     
@@ -73,6 +68,8 @@ chrom_size = 15
 # Parse file.
 locations = parse_file()
 
+bestEver = Chromosome(locations)
+
 # Initialize Population
 pop = Population(mutation_rate)
 for i in range(population_size):
@@ -89,11 +86,13 @@ for i in range(NOI):
     print([x.distance for x in pop.chromosomes])
     pop.relativeFitness()
     #print(i, '  ', len(pop.chromosomes[0].sequence))
-    #print([x.fitness for x in pop.chromosomes])
-    #print(pop.get_best_chromosome().fitness)
-    print(i, "  LENGTH   ", len(pop.chromosomes))
-    draw_chromosome(pop.get_best_chromosome())
-    #print(i, '  ', len(pop.get_best_chromosome().sequence))
+    print([x.fitness for x in pop.chromosomes])
+    print(pop.get_best_chromosome().fitness)
+    best_chromosome = pop.get_best_chromosome()
+    if(best_chromosome.fitness > bestEver.fitness):
+        draw_chromosome(best_chromosome)
+        bestEver = best_chromosome
+    print(i, '  ', len(pop.get_best_chromosome().sequence))
 
     # Create new population
     pop.cross_select()
