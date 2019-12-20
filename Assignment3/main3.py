@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import statistics as stat
 import math
 from GA import Population, Chromosome
+import GA
 
 plt.show()
 plt.ion()
@@ -51,16 +52,18 @@ def draw_chromosome(Chromosome):
     plt.plot(listx, listy, 'b.')
     #plt.plot(locations[bestEver[0]][0], locations[bestEver[0]][1], 'go')
     #plt.plot(locations[bestEver[len(bestEver) - 1]][0], locations[bestEver[len(bestEver - 1)]][1], 'go')
-    plt.title(str(Chromosome.fitness))
+    plt.title(str(Chromosome.distance) + "   " + str(len(Chromosome.sequence)))
     plt.draw()
     plt.pause(0.001)
 
 # How many chromosomes in each generation
-population_size = 10
+population_size = 1000
 # Probability of mutation
-mutation_rate = 0.02
+mutation_rate = 1.0
 # Number of iterations
 NOI = 1000
+# Number of locations
+chrom_size = 15
 
 # Parse file.
 locations = parse_file()
@@ -70,7 +73,9 @@ bestEver = Chromosome(locations)
 # Initialize Population
 pop = Population(mutation_rate)
 for i in range(population_size):
-    pop.chromosomes.append(Chromosome(locations[0:15]))
+    chrom = Chromosome(random.sample(locations[0:chrom_size], len(locations[0:chrom_size])))
+    chrom.sequence.append(chrom.sequence[0])
+    pop.chromosomes.append(chrom)
 
 # Main loop for the iterations
 for i in range(NOI):
@@ -78,7 +83,7 @@ for i in range(NOI):
     for Chromosome in pop.chromosomes:
         Chromosome.calculate_distance()
 
-    #print([x.distance for x in pop.chromosomes])
+    print([x.distance for x in pop.chromosomes])
     pop.relativeFitness()
     #print(i, '  ', len(pop.chromosomes[0].sequence))
     print([x.fitness for x in pop.chromosomes])
