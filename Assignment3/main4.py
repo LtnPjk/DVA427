@@ -159,14 +159,14 @@ def drawIndividual(individual):
 
     listx = [x.x for x in individual]
     listy = [y.y for y in individual]
-    '''
+    listx.append(listx[0])
+    listy.append(listy[0])
+    
     plt.subplot(1, 2, 1)
     plt.plot(listx, listy, 'r-')
     plt.plot(listx, listy, 'b.')
-    plt.draw()
-    plt.pause(0.001)
-    plt.show()
-    '''
+    plt.pause(0.01)
+    
 
 def geneticAlgorithmPlot(population, popSize, eliteSize, mutationRate, generations):
     pop = initialPopulation(popSize, population)
@@ -182,16 +182,20 @@ def geneticAlgorithmPlot(population, popSize, eliteSize, mutationRate, generatio
             drawIndividual(individual)
             break
     print("Last Fitness: ", progress[-1])
+    elapsed_time = time.time() - start_time
+    print("Time of execution: ", elapsed_time)
+
     #print(Fitness(pop[0]).routeDistance())
     #print(progress[-1])
     #print(pop[0])
-    '''
+    
     plt.subplot(1, 2, 2)
     plt.plot(progress)
     plt.ylabel('Distance')
     plt.xlabel('Generation')
+    plt.draw()
     plt.show()
-    '''
+    
     
 def parse_file():
 
@@ -231,7 +235,6 @@ for i in range(0,25):
 '''
 
 start_time = time.time()
-geneticAlgorithmPlot(population=cityList, popSize=100, eliteSize=20, mutationRate=0.01, generations=10)
-elapsed_time = time.time() - start_time
-print("Time of execution: ", elapsed_time)
+geneticAlgorithmPlot(population=cityList, popSize=100, eliteSize=20, mutationRate=0.0025, generations=5000)
+
 
