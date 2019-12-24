@@ -235,6 +235,6 @@ for i in range(0,25):
 '''
 
 start_time = time.time()
-geneticAlgorithmPlot(population=cityList, popSize=100, eliteSize=20, mutationRate=0.0025, generations=5000)
+geneticAlgorithmPlot(population=cityList, popSize=100, eliteSize=20, mutationRate=0.0010, generations=5000)
 
 
