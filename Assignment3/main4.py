@@ -1,53 +1,58 @@
 import os, time, sys, numpy as np, random, operator, pandas as pd, matplotlib.pyplot as plt
 
-class City:
+# A location with x and y values
+class Chromosome:
     def __init__(self, x, y):
         self.x = x
         self.y = y
     
-    def distance(self, city):
-        xDis = abs(self.x - city.x)
-        yDis = abs(self.y - city.y)
+    # Calculate distance between two chromosomes
+    def distance(self, chromosome):
+        xDis = abs(self.x - chromosome.x)
+        yDis = abs(self.y - chromosome.y)
         distance = np.sqrt((xDis ** 2) + (yDis ** 2))
         return distance
     
     def __repr__(self):
         return "(" + str(self.x) + "," + str(self.y) + ")"
 
+# Fitness value of a route
 class Fitness:
     def __init__(self, route):
         self.route = route
         self.distance = 0
         self.fitness= 0.0
     
+    # Calculate distance of a route 
     def routeDistance(self):
         if self.distance ==0:
             pathDistance = 0
             for i in range(0, len(self.route)):
-                fromCity = self.route[i]
-                toCity = None
+                fromChromosome = self.route[i]
+                toChromosome = None
                 if i + 1 < len(self.route):
-                    toCity = self.route[i + 1]
+                    toChromosome = self.route[i + 1]
                 else:
-                    toCity = self.route[0]
-                pathDistance += fromCity.distance(toCity)
+                    toChromosome = self.route[0]
+                pathDistance += fromChromosome.distance(toChromosome)
             self.distance = pathDistance
         return self.distance
     
+    # Translate the distance to a fitness
     def routeFitness(self):
         if self.fitness == 0:
             self.fitness = 1 / float(self.routeDistance())
         return self.fitness
 
-def createRoute(cityList):
-    route = random.sample(cityList, len(cityList))
+def createRoute(chromosomeList):
+    route = random.sample(chromosomeList, len(chromosomeList))
     return route
 
-def initialPopulation(popSize, cityList):
+def initialPopulation(popSize, chromosomeList):
     population = []
 
     for i in range(0, popSize):
-        population.append(createRoute(cityList))
+        population.append(createRoute(chromosomeList))
     return population
 
 def rankRoutes(population):
@@ -119,11 +124,11 @@ def mutate(individual, mutationRate):
         if(random.random() < mutationRate):
             swapWith = int(random.random() * len(individual))
             
-            city1 = individual[swapped]
-            city2 = individual[swapWith]
+            chromosome1 = individual[swapped]
+            chromosome2 = individual[swapWith]
             
-            individual[swapped] = city2
-            individual[swapWith] = city1
+            individual[swapped] = chromosome2
+            individual[swapWith] = chromosome1
     return individual
 
 def mutatePopulation(population, mutationRate):
@@ -166,7 +171,7 @@ def drawIndividual(individual):
     plt.plot(listx, listy, 'r-')
     plt.plot(listx, listy, 'b.')
     plt.pause(0.01)
-    
+    plt.draw()
 
 def geneticAlgorithmPlot(population, popSize, eliteSize, mutationRate, generations):
     pop = initialPopulation(popSize, population)
@@ -193,6 +198,7 @@ def geneticAlgorithmPlot(population, popSize, eliteSize, mutationRate, generatio
     plt.plot(progress)
     plt.ylabel('Distance')
     plt.xlabel('Generation')
+    plt.pause(0.01)
     plt.draw()
     plt.show()
     
@@ -226,15 +232,15 @@ def parse_file():
 locations = parse_file()
 #print(locations)
 
-cityList = [City(x[0], x[1]) for x in locations]
+chromosomeList = [Chromosome(x[0], x[1]) for x in locations]
 
-#print(cityList)
+#print(chromosomeList)
 '''
 for i in range(0,25):
-    cityList.append(City(x=int(random.random() * 200), y=int(random.random() * 200)))
+    chromosomeList.append(Chromosome(x=int(random.random() * 200), y=int(random.random() * 200)))
 '''
 
 start_time = time.time()
-geneticAlgorithmPlot(population=cityList, popSize=100, eliteSize=20, mutationRate=0.0010, generations=5000)
+geneticAlgorithmPlot(population=chromosomeList, popSize=100, eliteSize=20, mutationRate=0.0010, generations=5)
 
 
