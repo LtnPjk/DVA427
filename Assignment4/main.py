@@ -92,18 +92,18 @@ def printPath(x):
     finalPath.reverse()
     print("Length:\t", distance,"\tPath from\t", b, " to ", endVertex , '\t', finalPath)    
     
-#parse_file()
+parse_file()
 
-endVertex = '5'
+endVertex = 'F'
 
-graph = {
-    "1":[["2", 7], ["3", 9], ["6", 14]],
-    "2":[["1", 7], ["3", 10], ["4", 15]],
-    "3":[["2", 10], ["1", 9], ["6", 2], ["4", 11]],
-    "4":[["2", 15], ["3", 11], ["5", 6]],
-    "5":[["4", 6], ["6", 9]],
-    "6":[["1", 14], ["3", 2], ["5", 9]],
-    }
+#graph = {
+#    "1":[["2", 7], ["3", 9], ["6", 14]],
+#    "2":[["1", 7], ["3", 10], ["4", 15]],
+#    "3":[["2", 10], ["1", 9], ["6", 2], ["4", 11]],
+#    "4":[["2", 15], ["3", 11], ["5", 6]],
+#    "5":[["4", 6], ["6", 9]],
+#    "6":[["1", 14], ["3", 2], ["5", 9]],
+#    }
 
 for city in graph.keys():
     if city == endVertex:
@@ -111,4 +111,4 @@ for city in graph.keys():
     paths = dijkstra(city)
     printPath(endVertex)
 
-print(graph)
+#print(graph)

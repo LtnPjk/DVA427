@@ -38,16 +38,18 @@ class Fitness:
             self.distance = pathDistance
         return self.distance
     
-    # Translate the distance to a fitness
+    # Translate the distance to a fitness (lower distance = higher fitness)
     def routeFitness(self):
         if self.fitness == 0:
             self.fitness = 1 / float(self.routeDistance())
         return self.fitness
 
+# Create a route by taking a random sample of a list of chromosomes (locations)
 def createRoute(chromosomeList):
     route = random.sample(chromosomeList, len(chromosomeList))
     return route
 
+# Create a population (list of routes) of size popSize
 def initialPopulation(popSize, chromosomeList):
     population = []
 
@@ -55,12 +57,14 @@ def initialPopulation(popSize, chromosomeList):
         population.append(createRoute(chromosomeList))
     return population
 
+# Create a dictionary of the fitness of each route in the population sorted from best to worst
 def rankRoutes(population):
     fitnessResults = {}
     for i in range(0,len(population)):
         fitnessResults[i] = Fitness(population[i]).routeFitness()
     return sorted(fitnessResults.items(), key = operator.itemgetter(1), reverse = True)
 
+# Select the eliteSize best routes and let the rest be chosen by random influenced by their fitness
 def selection(popRanked, eliteSize):
     selectionResults = []
     df = pd.DataFrame(np.array(popRanked), columns=["Index","Fitness"])
@@ -77,6 +81,7 @@ def selection(popRanked, eliteSize):
                 break
     return selectionResults
 
+# Extract the selected routes from our population
 def matingPool(population, selectionResults):
     matingpool = []
     for i in range(0, len(selectionResults)):
@@ -84,7 +89,7 @@ def matingPool(population, selectionResults):
         matingpool.append(population[index])
     return matingpool
 
-
+# Make a child from two parents using crossover
 def breed(parent1, parent2):
     child = []
     childP1 = []
@@ -104,7 +109,7 @@ def breed(parent1, parent2):
     child = childP1 + childP2
     return child
 
-
+# Create offspring population using elitism (keeping the eliteSize best routes) and breeding (crossover)
 def breedPopulation(matingpool, eliteSize):
     children = []
     length = len(matingpool) - eliteSize
@@ -118,7 +123,7 @@ def breedPopulation(matingpool, eliteSize):
         children.append(child)
     return children
 
-
+# Mutate an individual (route) by swapping two chromomsomes (can happen multiple times)
 def mutate(individual, mutationRate):
     for swapped in range(len(individual)):
         if(random.random() < mutationRate):
@@ -131,6 +136,7 @@ def mutate(individual, mutationRate):
             individual[swapWith] = chromosome1
     return individual
 
+# Mutate a whole population
 def mutatePopulation(population, mutationRate):
     mutatedPop = []
     
@@ -139,7 +145,7 @@ def mutatePopulation(population, mutationRate):
         mutatedPop.append(mutatedInd)
     return mutatedPop
 
-
+# Create a new generation
 def nextGeneration(currentGen, eliteSize, mutationRate):
     popRanked = rankRoutes(currentGen)
     selectionResults = selection(popRanked, eliteSize)
@@ -148,6 +154,7 @@ def nextGeneration(currentGen, eliteSize, mutationRate):
     nextGeneration = mutatePopulation(children, mutationRate)
     return nextGeneration
 
+# Run the Genetic Algorithm
 def geneticAlgorithm(population, popSize, eliteSize, mutationRate, generations):
     pop = initialPopulation(popSize, population)
     print("Initial distance: " + str(1 / rankRoutes(pop)[0][1]))
@@ -178,15 +185,16 @@ def geneticAlgorithmPlot(population, popSize, eliteSize, mutationRate, generatio
     progress = []
     progress.append(1 / rankRoutes(pop)[0][1])
     
+    print("Initial distance: " + str(1 / rankRoutes(pop)[0][1]))
     for i in range(0, generations):
         pop = nextGeneration(pop, eliteSize, mutationRate)
         progress.append(1 / rankRoutes(pop)[0][1])
-    
+    print("Final distance: " + str(1 / rankRoutes(pop)[0][1]))
     for individual in pop:
         if Fitness(individual).routeDistance() == progress[-1]:
             drawIndividual(individual)
             break
-    print("Last Fitness: ", progress[-1])
+    #print("Last Fitness: ", progress[-1])
     elapsed_time = time.time() - start_time
     print("Time of execution: ", elapsed_time)
 
@@ -241,6 +249,4 @@ for i in range(0,25):
 '''
 
 start_time = time.time()
-geneticAlgorithmPlot(population=chromosomeList, popSize=100, eliteSize=20, mutationRate=0.0010, generations=5)
-
-
+geneticAlgorithmPlot(population=chromosomeList, popSize=100, eliteSize=20, mutationRate=0.0010, generations=5000)
