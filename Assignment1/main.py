@@ -144,18 +144,26 @@ def test():
     zh, ah, zo, ao, error_out = feed_forward(test_features, test_labels)
 
     ao = [int(round_half_up(i, 0)) for i in ao]
-
+    ao = np.array(ao)
     correct_guesses = 0
+    correct_guesses_0 = 0
+    correct_guesses_1 = 0
 
     for i, j in zip(ao, test_labels):
         if i == int(j):
             correct_guesses = correct_guesses + 1
-    
-    return (correct_guesses/len(test_labels))
+            if i == 0:
+                correct_guesses_0 = correct_guesses_0 + 1
+            elif i == 1:
+                correct_guesses_1 = correct_guesses_1 + 1
+
+    num_zeros = (ao == 0).sum()
+    num_ones = (ao == 1).sum()
+    return (correct_guesses/len(test_labels)), (correct_guesses_0/num_zeros), (correct_guesses_1/num_ones)
 
 def train(epochs, n):
     global wo, wh, res, lr
-    plt.ion()
+    #plt.ion()
     epoch_vali = []
 
     for epoch in range(epochs):
@@ -171,7 +179,7 @@ def train(epochs, n):
             print('Epoch: ', epoch)
             res = validation()
             epoch_vali.append(res)
-            if len(epoch_vali) > 100:
+            if len(epoch_vali) > 10000:
                 epoch_vali.pop(0)
             if res == -1:
                 print("Predictability: ", test())
@@ -180,7 +188,9 @@ def train(epochs, n):
             plt.clf()
             x = np.linspace(0, len(epoch_vali), len(epoch_vali))
             plt.plot(x, epoch_vali, color = 'red')
-            plt.title(str(epoch))
+            plt.title('ANN Validation Accuracy')
+            plt.ylabel('validation error')
+            plt.xlabel('epoch number (x100)')
             plt.draw()
             plt.pause(0.1)
 
@@ -206,8 +216,11 @@ def train(epochs, n):
         wh -= lr * dcost_wh
         wo -= lr * dcost_wo
 
-    plt.show(block=True)    
-    print("Predictability: ", test())
+    pred_tot, pred_0, pred_1 = test()
+    print("Predictability total: ", pred_tot)
+    print("Predictability class 0: ", pred_0)
+    print("Predictability class 1: ", pred_1)
+    plt.show()    
 
 ############################################
 np.random.seed(0)
